@@ -5,7 +5,7 @@ import {
   ValorantWebsocketClient,
   createValorantApiClient,
 } from "@tqman/valorant-api-client";
-import { LOCAL_CONFIG } from "@tqman/valorant-api-client/default-configs";
+import { presets } from "@tqman/valorant-api-client/presets";
 import chalk from "chalk";
 import ora, { type Ora } from "ora";
 import {
@@ -25,8 +25,8 @@ import { isNativeError } from "util/types";
 import { ValorantApi, createValorantApi } from "~/api";
 import { LOGGER } from "~/logger";
 import { isFileAccessible } from "~/utils/filesystem";
-import { isProcessRunning } from "~/utils/process";
 import { sleep } from "~/utils/promise";
+import { isValorantRunning } from "~/utils/valorant";
 
 import { modifyApiBehaviour } from "./helpers";
 
@@ -39,7 +39,7 @@ const VAL_OPEN_DEBOUNCE_MS = 1000;
 const VAL_RECONNECT_DELAY_MS = 5 * 1000;
 
 // Config for authentication via local API
-const VAPIC_OPTIONS = LOCAL_CONFIG;
+const VAPIC_OPTIONS = presets.local;
 
 const logger = LOGGER.forModule("Connection");
 
@@ -72,8 +72,8 @@ export class ValorantConnection {
       this.#ws.on("open", () => {
         logger.info(`WS Connected on port ${port}`);
       });
-      this.#ws.on("close", async () => {
-        logger.info("WS Disconnected");
+      this.#ws.on("close", async e => {
+        logger.info("WS Disconnected", e);
         if (spinner) {
           spinner.warn("Connection lost!\n");
         }
@@ -111,7 +111,7 @@ export class ValorantConnection {
 
     const isValorantRunning$ = timer(0, CHECK_INTERVAL_MS).pipe(
       switchMap(async () => {
-        const processFlag = await isProcessRunning("valorant.exe");
+        const processFlag = await isValorantRunning();
         const filesFlag = await isFileAccessible(LOCK_FILE_PATH, LOG_FILE_PATH);
         return filesFlag && processFlag;
       }),

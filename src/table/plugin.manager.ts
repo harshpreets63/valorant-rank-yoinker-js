@@ -5,9 +5,12 @@ import { LOGGER } from "~/logger";
 
 import type { Table } from ".";
 import { PlayerAgentPlugin } from "./plugins/player-agent.plugin";
+import { PlayerDeltaRRPlugin } from "./plugins/player-delta-rr.plugin";
+import { PlayerHeadshotPlugin } from "./plugins/player-headshot.plugin";
 import { PlayerLevelPlugin } from "./plugins/player-level.plugin";
 import { PlayerMatchesPlugin } from "./plugins/player-matches.plugin";
 import { PlayerNamePlugin } from "./plugins/player-name.plugin";
+import { PlayerNotesPlugin } from "./plugins/player-notes.plugin";
 import { PlayerPartyPlugin } from "./plugins/player-party.plugin";
 import { PlayerPeakRankPlugin } from "./plugins/player-peak-rank.plugin";
 import { PlayerRankPlugin } from "./plugins/player-rank.plugin";
@@ -36,6 +39,9 @@ const INBUILT_PLUGINS: PluginDefinition[] = [
   PlayerMatchesPlugin,
   PlayerSkinsPlugin,
   PlayerSorterPlugin,
+  PlayerNotesPlugin,
+  PlayerDeltaRRPlugin,
+  PlayerHeadshotPlugin,
   TeamSpacerPlugin,
 ];
 
@@ -72,10 +78,14 @@ export class PluginManager {
 
       if (typeof entry === "boolean" && entry) {
         this.activate(key);
-      } else if ("enabled" in entry && entry.enabled !== false) {
-        this.activate(key);
-      } else if (Object.keys(entry).length > 0) {
-        this.activate(key);
+      }
+
+      if (typeof entry === "object") {
+        if ("enabled" in entry && entry.enabled !== false) {
+          this.activate(key);
+        } else if (Object.keys(entry).length > 0) {
+          this.activate(key);
+        }
       }
     }
   }
@@ -86,7 +96,7 @@ export class PluginManager {
   }
 
   async auto() {
-    logger.info("executing Auto-Plugins");
+    logger.info("Executing Auto-Plugins");
 
     const plugins = this.active.filter(p => p.type === "auto");
 
@@ -103,7 +113,7 @@ export class PluginManager {
   }
 
   async post() {
-    logger.info("executing Post-Plugins");
+    logger.info("Executing Post-Plugins");
 
     // Set Intial Row and Column Ids
     this.table.rowIds = this.table.data.prefetched.uuids;

@@ -4,6 +4,7 @@ import { match } from "ts-pattern";
 
 import { ValorantApi } from "~/api";
 import { GAMESTATES, type GameState } from "~/api/types";
+import { LOGGER } from "~/logger";
 import { inject } from "~/shared/dependencies";
 import { retryPromise } from "~/utils/rxjs";
 
@@ -19,6 +20,8 @@ import { MatchService } from "./match.service";
 import { NamesService } from "./names.service";
 import { PartyService } from "./party.service";
 import { PresenceService } from "./presence.service";
+
+const logger = LOGGER.forModule("GameDataService");
 
 export class GameDataService {
   private api = inject(ValorantApi);
@@ -134,12 +137,27 @@ export class GameDataService {
     };
   }
 
-  private async getInGameData(): Promise<Omit<InGameData, "state" | "hash">> {
+  private async getInGameMatchIdAndData() {
     this.spinner.start("Getting Match Id...");
     const matchId = await this.matchService.getCoreGameMatchId();
-
     this.spinner.start("Fetching CoreGame Match Data...");
     const matchData = await this.api.core.getCurrentGameMatchData(matchId);
+
+    if (!matchData.Players.length) {
+      logger.warn("No players in match data", matchId);
+      throw new Error("No players in match data");
+    }
+
+    return { matchId, matchData };
+  }
+
+  private async getInGameData(): Promise<Omit<InGameData, "state" | "hash">> {
+    const { matchId, matchData } = await retryPromise(
+      this.getInGameMatchIdAndData(),
+      {
+        delay: 1000,
+      },
+    );
 
     this.spinner.start("Fetching CoreGame Match Loadouts...");
     const matchLoadouts = await this.api.core.getCurrentGameLoadouts(matchId);

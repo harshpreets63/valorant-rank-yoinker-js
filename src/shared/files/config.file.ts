@@ -13,7 +13,9 @@ plugins:
   player-agent: true
   player-name: true
   player-skins:
-    weapons: [Phantom]
+    weapons: [Vandal]
+    replacements:
+      "Radiant Entertainment System": "Radiant E.S."
   
   # Styles: short, long 
   player-rank:
@@ -22,14 +24,19 @@ plugins:
   player-rr: true
   player-level: true
   player-winrate: true
-
+  
   # Options same as player-rank
   player-peak-rank:
     style: short
   
+  player-delta-rr: true
+  player-headshot: false
+
   # Count greator than 2 not recommended at all!
   player-matches:
     count: 1
+
+  player-notes: true
   
   # Sorters: level, rr, tier
   # First in the list gets the highest priority

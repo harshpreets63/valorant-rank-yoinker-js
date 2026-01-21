@@ -22,7 +22,7 @@ export function getHeadshotRatio(
     }
   });
 
-  return totalShots > 0 ? Math.round(headshots / totalShots) : 0;
+  return totalShots > 0 ? headshots / totalShots : 0;
 }
 
 export function getKillDeathRatio(
@@ -55,8 +55,9 @@ export function getMatchOverview(
     killsTaken = player.stats.kills;
   }
 
-  const playerTeamId = matchDetails.players.find(p => p.subject === puuid)
-    ?.teamId;
+  const playerTeamId = matchDetails.players.find(
+    p => p.subject === puuid,
+  )?.teamId;
 
   if (!playerTeamId) {
     throw new Error("Player Team Id not found");

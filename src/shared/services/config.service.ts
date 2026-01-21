@@ -15,8 +15,11 @@ const pluginsSchema = z.record(
   z.union([z.boolean(), z.record(z.string(), z.any())]),
 );
 
-const configSchema = z.object({
-  features: z.record(z.string(), z.boolean()).default({}),
+export const configSchema = z.object({
+  features: z.record(z.string(), z.boolean()).default({
+    "auto-start-valorant": false,
+    "no-dev-logs": false,
+  }),
   plugins: pluginsSchema,
 });
 

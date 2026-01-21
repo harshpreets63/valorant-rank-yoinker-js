@@ -15,3 +15,5 @@ bin
 cache
 logs
 config.yaml
+vryjs.db
+vryjs.db-*

@@ -8,7 +8,7 @@ import { GAMESTATES, KnownGameStates } from "~/api/types";
 import { AgentEntity } from "~/entities/definitions/agent.entity";
 import { LOGGER } from "~/logger";
 import { inject } from "~/shared/dependencies";
-import { RGBTuple } from "~/utils/colors";
+import type { RGBTuple } from "~/utils/colors/types";
 import { tryCatch } from "~/utils/promise";
 
 
@@ -16,8 +16,7 @@ import { tryCatch } from "~/utils/promise";
 import { EMPTY_STRING } from "../helpers/string";
 import { definePlugin } from "../types/plugin.interface";
 
-
-const UNKNOWN_AGENT = "Unknown";
+export const UNKNOWN_AGENT = "Unknown";
 
 const PLUGIN_ID = "player-agent";
 const COLUMN_NAME = "Agent";
@@ -45,9 +44,11 @@ export const PlayerAgentPlugin = definePlugin({
             agent: tryCatch(
               () => api.helpers.getAgent(agent!.id).displayName,
               () => {
-                LOGGER.forModule("Agent-Plugin").error(
-                  `Agent not found, aid ${agent!.id}, puuid ${puuid}`,
-                );
+                if (agent && agent.id) {
+                  LOGGER.forModule("Agent-Plugin").error(
+                    `Agent not found, aid ${agent!.id}, puuid ${puuid}`,
+                  );
+                }
                 return UNKNOWN_AGENT;
               },
             ),
@@ -92,17 +93,21 @@ export const agentColorLUT: Record<string, RGBTuple> = {
   Vyse: [187, 193, 202],
 };
 
-function formatAgent(opts: {
+export function formatAgent(opts: {
   agent: string;
   isLocked: boolean;
   state: KnownGameStates;
+  unknownString?: string;
 }): string {
   return match(opts)
     .with(
       { agent: UNKNOWN_AGENT, state: GAMESTATES.PREGAME },
       () => EMPTY_STRING,
     )
-    .with({ agent: UNKNOWN_AGENT }, () => chalk.dim("Unknown"))
+    .with(
+      { agent: UNKNOWN_AGENT },
+      o => o.unknownString || chalk.dim("Unknown"),
+    )
     .with({ isLocked: true }, o => colorizeAgent(o.agent))
     .otherwise(o => chalk.dim(o.agent));
 }

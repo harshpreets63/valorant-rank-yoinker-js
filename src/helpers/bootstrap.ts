@@ -2,6 +2,7 @@ import ora from "ora";
 
 import { ValorantApi } from "~/api";
 import { ValorantConnection, createValorantConnection } from "~/connection";
+import { initDB } from "~/db/init";
 import { EntityManager } from "~/entities/entity.manager";
 import { LOGGER } from "~/logger";
 import { register, resolve } from "~/shared/dependencies";
@@ -55,7 +56,15 @@ export async function doBootstrap() {
 
   LOGGER.API.info("Authenticated");
 
-  const globalSpinner = register(GlobalSpinner, ora());
+  const globalSpinner = register(
+    GlobalSpinner,
+    ora({
+      // FIX FOR HOTKEYS
+      // read: https://github.com/sindresorhus/ora/issues/156
+      hideCursor: true,
+      discardStdin: false,
+    }),
+  );
   onExit(() => {
     if (globalSpinner.isSpinning) {
       globalSpinner.fail("Aborted...\n");
@@ -73,6 +82,8 @@ export async function doBootstrap() {
   /* Others */
   resolve(EntityManager);
   resolve(Table);
+
+  await initDB();
 
   enableHotkeys(() => gameDataService.requestUpdate());
 

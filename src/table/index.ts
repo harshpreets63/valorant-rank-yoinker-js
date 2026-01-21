@@ -8,7 +8,7 @@ import { ValorantApi } from "~/api";
 import { EntityManager } from "~/entities/entity.manager";
 import { LOGGER } from "~/logger";
 import { inject } from "~/shared/dependencies";
-import { getQueueName } from "~/shared/luts/queue.lut";
+import { QueueName, getQueueName } from "~/shared/luts/queue.lut";
 import { ConfigService } from "~/shared/services/config.service";
 import {
   type GameData,
@@ -18,6 +18,7 @@ import {
 } from "~/shared/services/helpers/game-data";
 import { PresenceService } from "~/shared/services/presence.service";
 import { GlobalSpinner } from "~/shared/spinner";
+import { ensureArray } from "~/utils/array";
 import { GridStore } from "~/utils/grid-store";
 
 import { colorizeGameState } from "./formatters/state.formatter";
@@ -42,6 +43,7 @@ export class Table {
   grid = new GridStore<string>();
   headers = new Map<string, string>();
   alignments = new Map<string, "left" | "center" | "right">();
+  notes = new Map<string, string | string[]>();
 
   // These are the final rowIds and colIds that will be printed
   // Will be manipulated using 'post' plugins
@@ -76,6 +78,26 @@ export class Table {
     console.log(headerStr);
     console.log(tableStr);
     process.stdout.write("\n");
+
+    if (this.notes.size) {
+      for (const [noteTitle, note] of this.notes) {
+        const titleStr = chalk.gray.bold(" * ") + noteTitle;
+        const titleWidth = stringWidth(titleStr);
+
+        const subnotes = ensureArray(note).filter(Boolean);
+
+        if (!subnotes.length) {
+          continue;
+        }
+
+        console.log(titleStr + " " + subnotes[0]);
+        for (let i = 1; i < subnotes.length; i++) {
+          console.log(" ".repeat(titleWidth + 1) + subnotes[i]);
+        }
+      }
+    }
+
+    process.stdout.write("\n");
   }
 
   private clear() {
@@ -83,6 +105,7 @@ export class Table {
     this.grid.clear();
     this.headers.clear();
     this.alignments.clear();
+    this.notes.clear();
   }
 
   private getCliTable(colIds: string[], rowIds: string[]) {
@@ -168,7 +191,8 @@ export class Table {
 
     if (!isMenuData(this.data)) {
       t.map = this.api.helpers.getMap(this.data.match.data.MapID).displayName;
-      t.server = this.api.helpers.getServerName(this.data.match.data.GamePodID);
+      t.server =
+        this.api.helpers.getServerName(this.data.match.data.GamePodID) ?? "";
     }
 
     if (isPreGameData(this.data)) {
@@ -203,7 +227,13 @@ export class Table {
     t.map && (tStr += " " + t.map);
     t.queue && (tStr += " " + `(${t.queue})`);
     t.server && (tStr += " " + `[${t.server}]`);
-    t.team && (tStr += " " + t.team);
+
+    const TEAM_QUEUE_EXCLUSIONS: QueueName[] = ["Deathmatch"];
+    const TEAM_MAP_EXCLUSIONS = ["The Range"];
+    t.team &&
+      !TEAM_QUEUE_EXCLUSIONS.includes(t.queue as QueueName) &&
+      !TEAM_MAP_EXCLUSIONS.includes(t.map!) &&
+      (tStr += " " + t.team);
 
     if (tStr.length > 0) {
       tStr = t.state + " - " + tStr.trim();

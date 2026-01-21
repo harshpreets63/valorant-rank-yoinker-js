@@ -33,6 +33,9 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Test
+        run: pnpm turbo test
+
       - name: Build
         run: pnpm turbo build
 
@@ -46,6 +49,7 @@ jobs:
         run: |
           mkdir -p out/bin
           mv out/vryjs.mjs out/bin
+          mv out/libsql.node out/bin
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
