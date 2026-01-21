@@ -1,6 +1,8 @@
 import chalk from "chalk";
 import { match } from "ts-pattern";
 
+
+
 import { ValorantApi } from "~/api";
 import { GAMESTATES, KnownGameStates } from "~/api/types";
 import { AgentEntity } from "~/entities/definitions/agent.entity";
@@ -9,8 +11,11 @@ import { inject } from "~/shared/dependencies";
 import { RGBTuple } from "~/utils/colors";
 import { tryCatch } from "~/utils/promise";
 
+
+
 import { EMPTY_STRING } from "../helpers/string";
 import { definePlugin } from "../types/plugin.interface";
+
 
 const UNKNOWN_AGENT = "Unknown";
 
@@ -82,6 +87,9 @@ export const agentColorLUT: Record<string, RGBTuple> = {
   Harbor: [16, 200, 205],
   Gekko: [153, 204, 4],
   Deadlock: [208, 206, 194],
+  Iso: [72, 78, 243],
+  Clove: [176, 70, 226],
+  Vyse: [187, 193, 202],
 };
 
 function formatAgent(opts: {

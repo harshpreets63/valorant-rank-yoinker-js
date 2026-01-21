@@ -1,6 +1,7 @@
 import type { ValorantApi } from "..";
 import type { MatchDetails } from "../types";
 
+
 export function getHeadshotRatio(
   this: ValorantApi,
   matchDetails: MatchDetails,
@@ -47,6 +48,13 @@ export function getMatchOverview(
   matchDetails: MatchDetails,
   puuid: string,
 ) {
+  let killsTaken = 0;
+  const player = matchDetails.players.find(p => p.subject === puuid);
+
+  if (player?.stats) {
+    killsTaken = player.stats.kills;
+  }
+
   const playerTeamId = matchDetails.players.find(p => p.subject === puuid)
     ?.teamId;
 
@@ -83,5 +91,6 @@ export function getMatchOverview(
       ally: allyTeam.roundsWon,
       enemy: enemyTeam.roundsWon,
     },
+    kills : killsTaken
   };
 }

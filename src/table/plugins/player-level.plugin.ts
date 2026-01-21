@@ -1,5 +1,8 @@
 import chalk from "chalk";
+import { $ } from "execa";
 import { match } from "ts-pattern";
+
+
 
 import { ValorantApi } from "~/api";
 import { LevelEntity } from "~/entities/definitions/level.entity";
@@ -7,7 +10,10 @@ import { inject } from "~/shared/dependencies";
 import { isStreamerModeEnabled } from "~/shared/environment";
 import { PartyService } from "~/shared/services/party.service";
 
+
+
 import { definePlugin } from "../types/plugin.interface";
+
 
 const PLUGIN_ID = "player-level";
 const COLUMN_NAME = "Level";
@@ -48,7 +54,7 @@ export const PlayerLevelPlugin = definePlugin({
 
 function formatLevel(opts: { level: number; isHidden: boolean }): string {
   return match(opts)
-    .with({ isHidden: true }, isStreamerModeEnabled, () => chalk.dim("H"))
+    .with({ isHidden: true }, isStreamerModeEnabled, () => `${chalk.dim('H')} ${colorizeLevel(opts.level)}`)
     .otherwise(o => colorizeLevel(o.level));
 }
 

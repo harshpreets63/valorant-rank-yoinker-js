@@ -1,8 +1,13 @@
 import chalk from "chalk";
 
+
+
 import { MatchesEntity } from "~/entities/definitions/matches.entity";
 
+
+
 import { definePlugin } from "../types/plugin.interface";
+
 
 const PLUGIN_ID = "player-matches";
 const COLUMN_NAME = "Prev Matches";
@@ -10,7 +15,7 @@ export const PlayerMatchesPlugin = definePlugin({
   id: PLUGIN_ID,
   hooks: {
     onState: async ({ data, table, config }) => {
-      const count = +config.count || 1;
+      const count = +config.count || 5;
 
       const entities = await table.entityManager.getEntitiesForPlayers(
         data,
@@ -42,13 +47,16 @@ type Score = {
   enemy: number;
   ally: number;
 };
+type Kills = {
+  kills: number;
+};
 
 type Status = {
   result: "Draw" | "Win" | "Lose";
   completion: "" | "Surrendered" | "Completed" | "VoteDraw";
 };
 
-type MatchOverview = { status: Status; score: Score };
+type MatchOverview = { status: Status; score: Score, kills : Kills };
 
 function formatMatches(matches: MatchOverview[]) {
   if (matches.length === 0) {
@@ -59,10 +67,9 @@ function formatMatches(matches: MatchOverview[]) {
 }
 
 function formatMatch(opts: MatchOverview) {
-  const { status, score } = opts;
-
+  const { status, score, kills } = opts;
   const resultStr = formatMatchResult(status.result);
-  const scoreStr = chalk.gray(`(${score.ally}:${score.enemy})`);
+  const scoreStr = chalk.gray(`(${score.ally}:${score.enemy} ${kills})`);
 
   let str = `${resultStr} ${scoreStr}`;
 

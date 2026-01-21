@@ -63,20 +63,20 @@ function formatName(opts: {
   let str = match(opts)
     .with({ state: GAMESTATES.MENUS }, o => chalk.rgb(...PARTY_COLOR)(o.name))
     .with({ isInMyParty: true }, o => chalk.rgb(...PARTY_COLOR)(o.name))
-    .with({ isHidden: true }, isStreamerModeEnabled, () => chalk.dim("Hidden"))
+    .with({ isHidden: true }, isStreamerModeEnabled, () => `${chalk.dim('H')} ${chalk.rgb(...ENEMY_COLOR)(opts.name)}`)
     .with(
       { state: GAMESTATES.PREGAME },
       { state: GAMESTATES.INGAME, isAlly: true },
       o =>
         `${chalk.rgb(...ALLY_COLOR)(o.name)}${
-          o.isHidden ? chalk.dim("(H)") : ""
+          o.isHidden ? chalk.dim("(H) ") : ""
         }`,
     )
     .with(
       { state: GAMESTATES.INGAME },
       o =>
         `${chalk.rgb(...ENEMY_COLOR)(o.name)}${
-          o.isHidden ? chalk.dim("(H)") : ""
+          o.isHidden ? chalk.dim("(H) ") : ""
         }`,
     )
     .exhaustive();
